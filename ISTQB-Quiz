@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ISTQB Topic One Quiz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f0f2f5;
+      color: #333;
+      max-width: 900px;
+      margin: auto;
+    }
+    h2 {
+      text-align: center;
+    }
+    #progress, #timer {
+      font-weight: bold;
+      font-size: 1.1em;
+      text-align: center;
+      margin: 10px 0;
+    }
+    .question {
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      animation: fadeIn 0.5s ease forwards;
+    }
+    @keyframes fadeIn {
+      to { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; transform: translateY(10px); }
+    }
+    label {
+      display: block;
+      margin: 6px 0;
+      cursor: pointer;
+    }
+    .feedback {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    .correct { background-color: #d4f6d4; }
+    .incorrect { background-color: #ffdada; }
+    button {
+      padding: 10px 18px;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      margin: 5px;
+      cursor: pointer;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    #result {
+      text-align: center;
+      font-size: 1.2em;
+      margin-top: 20px;
+    }
+    #retryButton {
+      display: none;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 10px; }
+      button { width: 100%; margin: 10px 0; font-size: 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<h2>ISTQB Topic One Quiz</h2>
+<div id="timer">⏳ Time left: <span id="timeLeft">10:00</span></div>
+<div id="progress">Question 1 of 20</div>
+<div id="quizContainer"></div>
+
+<div style="text-align:center;">
+  <button id="backButton" onclick="prevQuestion()" disabled>Back</button>
+  <button id="navButton" onclick="nextQuestion()">Next</button>
+</div>
+
+<p id="result"></p>
+<div style="text-align:center;">
+  <button id="retryButton" onclick="retryQuiz()">Retry Quiz</button>
+</div>
+
+<script>
+const questions = [
+  { question: "Which of the following are objectives of software testing?", options: ["To find defects", "To prove the software is perfect", "To gain confidence in the software quality", "To prevent defects"], correct: ["To find defects", "To gain confidence in the software quality", "To prevent defects"] },
+  { question: "Which are fundamental principles of testing?", options: ["Exhaustive testing is possible", "Defect clustering", "Absence-of-errors fallacy", "Testing shows the presence of defects"], correct: ["Defect clustering", "Absence-of-errors fallacy", "Testing shows the presence of defects"] },
+  { question: "Why is testing necessary?", options: ["To reduce the risk of failure", "To increase development time", "To verify requirements are met", "To ensure software is bug-free"], correct: ["To reduce the risk of failure", "To verify requirements are met"] },
+  { question: "Which of the following are part of the test process?", options: ["Test planning", "Test execution", "Test closure", "Code compilation"], correct: ["Test planning", "Test execution", "Test closure"] },
+  { question: "Which are benefits of early testing?", options: ["Reduces cost of fixing defects", "Improves code readability", "Helps identify defects early", "Reduces testing time"], correct: ["Reduces cost of fixing defects", "Helps identify defects early"] },
+  { question: "Which are levels of testing?", options: ["Unit testing", "Integration testing", "System testing", "Deployment testing"], correct: ["Unit testing", "Integration testing", "System testing"] },
+  { question: "Which are static testing techniques?", options: ["Code review", "Walkthrough", "Black-box testing", "Inspection"], correct: ["Code review", "Walkthrough", "Inspection"] },
+  { question: "Which are dynamic testing techniques?", options: ["Unit testing", "System testing", "Code walkthrough", "Integration testing"], correct: ["Unit testing", "System testing", "Integration testing"] },
+  { question: "Which are examples of black-box testing?", options: ["Equivalence partitioning", "Decision table testing", "Statement testing", "Boundary value analysis"], correct: ["Equivalence partitioning", "Decision table testing", "Boundary value analysis"] },
+  { question: "Which are white-box testing techniques?", options: ["Statement testing", "Decision testing", "Path testing", "Exploratory testing"], correct: ["Statement testing", "Decision testing", "Path testing"] },
+  { question: "Which are test basis documents?", options: ["Requirements", "Design specifications", "Test cases", "User stories"], correct: ["Requirements", "Design specifications", "User stories"] },
+  { question: "Which are test work products?", options: ["Test plan", "Test case", "Test script", "Source code"], correct: ["Test plan", "Test case", "Test script"] },
+  { question: "Which are roles in a formal review?", options: ["Author", "Reviewer", "Moderator", "Developer"], correct: ["Author", "Reviewer", "Moderator"] },
+  { question: "Which are benefits of static testing?", options: ["Early defect detection", "Improved communication", "Reduced rework", "Increased code execution speed"], correct: ["Early defect detection", "Improved communication", "Reduced rework"] },
+  { question: "Which are types of maintenance testing?", options: ["Regression testing", "Confirmation testing", "Retesting", "Impact analysis"], correct: ["Regression testing", "Confirmation testing"] },
+  { question: "Which are test types?", options: ["Functional testing", "Non-functional testing", "Structural testing", "Exploratory testing"], correct: ["Functional testing", "Non-functional testing", "Structural testing"] },
+  { question: "Which are examples of non-functional testing?", options: ["Performance testing", "Usability testing", "Security testing", "Unit testing"], correct: ["Performance testing", "Usability testing", "Security testing"] },
+  { question: "Which are test activities in the test process?", options: ["Test planning", "Test monitoring", "Test control", "Code refactoring"], correct: ["Test planning", "Test monitoring", "Test control"] },
+  { question: "Which are common causes of software defects?", options: ["Miscommunication", "Time pressure", "Lack of training", "Perfect documentation"], correct: ["Miscommunication", "Time pressure", "Lack of training"] },
+  { question: "Which are test objectives during development?", options: ["Prevent defects", "Find defects", "Improve quality", "Delay release"], correct: ["Prevent defects", "Find defects", "Improve quality"] }
+];
+
+let current = 0;
+let score = 0;
+let timer;
+let totalTime = 10 * 60;
+const answers = [];
+
+function updateTimer() {
+  totalTime--;
+  const mins = String(Math.floor(totalTime / 60)).padStart(2, '0');
+  const secs = String(totalTime % 60).padStart(2, '0');
+  document.getElementById("timeLeft").innerText = `${mins}:${secs}`;
+
+  if (totalTime <= 0) {
+    clearInterval(timer);
+    submitQuiz();
+    document.getElementById("navButton").disabled = true;
+    document.getElementById("backButton").disabled = true;
+  }
+}
+
+function loadQuestion(index) {
+  const container = document.getElementById("quizContainer");
+  container.innerHTML = "";
+  document.getElementById("progress").innerText = `Question ${index + 1} of ${questions.length}`;
+  document.getElementById("backButton").disabled = index === 0;
+
+  const q = questions[index];
+  const div = document.createElement("div");
+  div.className = "question";
+
+  div.innerHTML = `<h4><strong>${index + 1}.</strong> ${q.question}</h4>` +
+    q.options.map(opt =>
+      `<label><input type="checkbox" name="q${index}" value="${opt}" ${answers[index]?.includes(opt) ? "checked" : ""}> ${opt}</label><br>`
+    ).join("") +
+    `<div class="feedback" id="feedback${index}"></div>`;
+
+  container.appendChild(div);
+  document.getElementById("navButton").innerText = (index === questions.length - 1) ? "Submit" : "Next";
+}
+
+function nextQuestion() {
+  const selected = Array.from(document.querySelectorAll(`input[name="q${current}"]:checked`)).map(cb => cb.value);
+  answers[current] = selected;
+
+  if (current === questions.length - 1) {
+    submitQuiz();
+    clearInterval(timer);
+    document.getElementById("navButton").disabled = true;
+    document.getElementById("backButton").disabled = true;
+    return;
+  }
+
+  current++;
+  loadQuestion(current);
+}
+
+function prevQuestion() {
+  if (current > 0) {
+    current--;
+    loadQuestion(current);
+  }
+}
+
+function submitQuiz() {
+  const container = document.getElementById("quizContainer");
+  container.innerHTML = "";
+  score = 0;
+
+  questions.forEach((q, index) => {
+    const div = document.createElement("div");
+    div.className = "question";
+    div.innerHTML = `<h4><strong>${index + 1}.</strong> ${q.question}</h4>` +
+      q.options.map(opt => {
+        const isCorrect = q.correct.includes(opt);
+        const wasSelected = answers[index]?.includes(opt);
+        const className = wasSelected
+          ? (isCorrect ? "correct" : "incorrect")
+          : (isCorrect ? "correct" : "");
+        return `<label class="${className}"><input type="checkbox" disabled ${wasSelected ? "checked" : ""}> ${opt}</label><br>`;
+      }).join("");
+
+    const isRight = q.correct.length === (answers[index]?.length || 0) &&
+                    q.correct.every(opt => answers[index]?.includes(opt));
+
+    if (isRight) score++;
+
+    div.innerHTML += `<div class="feedback" style="color:${isRight ? 'green' : 'red'};">${isRight ? "✅ Correct!" : "❌ Incorrect"}</div>`;
+    container.appendChild(div);
+  });
+
+  const percent = Math.round((score / questions.length) * 100);
+  document.getElementById("result").innerText = `🎯 You got ${score} out of ${questions.length} correct (${percent}%)`;
+  document.getElementById("retryButton").style.display = "inline-block";
+}
+
+function retryQuiz() {
+  current = 0;
+  score = 0;
+  totalTime = 10 * 60;
+  answers.length = 0;
+  document.getElementById("retryButton").style.display = "none";
+  document.getElementById("navButton").disabled = false;
+  document.getElementById("backButton").disabled = true;
+  document.getElementById("result").innerText = "";
+  loadQuestion(current);
+  clearInterval(timer);
+  timer = setInterval(updateTimer, 1000);
+}
+
+loadQuestion(current);
+timer = setInterval(updateTimer, 1000);
+</script>
+
+</body>
+</html>
